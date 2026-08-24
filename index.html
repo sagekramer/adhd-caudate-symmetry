@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caudate Nucleus Shape Asymmetry in Adolescent ADHD</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; color: #1a1a1a; line-height: 1.7; background: #fafaf8; }
+  a { color: #185FA5; }
+
+  .hero { padding: 3.5rem 2rem 2.5rem; border-bottom: 1px solid #e0ddd6; max-width: 860px; margin: 0 auto; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #888; font-family: -apple-system, sans-serif; margin-bottom: 0.75rem; }
+  h1 { font-size: 30px; font-weight: 400; line-height: 1.25; max-width: 600px; margin-bottom: 1rem; }
+  .subtitle { font-size: 15px; color: #555; max-width: 560px; font-family: -apple-system, sans-serif; line-height: 1.65; }
+  .meta { display: flex; gap: 2.5rem; margin-top: 1.75rem; flex-wrap: wrap; }
+  .meta-item { font-size: 12px; font-family: -apple-system, sans-serif; color: #888; }
+  .meta-item strong { display: block; font-size: 13px; color: #1a1a1a; font-weight: 500; margin-bottom: 2px; }
+
+  .section { padding: 2.5rem 2rem; border-bottom: 1px solid #e0ddd6; max-width: 860px; margin: 0 auto; }
+  .section-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #888; font-family: -apple-system, sans-serif; margin-bottom: 1.25rem; }
+  h2 { font-size: 22px; font-weight: 400; margin-bottom: 1rem; }
+  p { font-size: 15px; color: #555; font-family: -apple-system, sans-serif; margin-bottom: 0.75rem; line-height: 1.65; }
+
+  .hypothesis { background: #f5f4f0; border-left: 3px solid #ccc; padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; font-style: italic; font-size: 15px; color: #444; font-family: Georgia, serif; margin: 1rem 0; }
+
+  .protocol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem; }
+  .protocol-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 1.25rem; }
+  .protocol-card h3 { font-size: 14px; font-weight: 500; font-family: -apple-system, sans-serif; margin-bottom: 0.35rem; color: #1a1a1a; }
+  .tag { display: inline-block; font-size: 11px; font-family: -apple-system, sans-serif; padding: 2px 10px; border-radius: 20px; margin-bottom: 0.85rem; }
+  .tag-pure { background: #e6f1fb; color: #185FA5; }
+  .tag-scale { background: #eaf3de; color: #3B6D11; }
+  .side-label { font-size: 11px; font-weight: 500; font-family: -apple-system, sans-serif; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin: 0.75rem 0 0.25rem; }
+  .steps { list-style: none; padding: 0; }
+  .steps li { font-size: 13px; font-family: -apple-system, sans-serif; color: #555; padding: 0.3rem 0; border-bottom: 1px solid #f0ede6; display: flex; gap: 0.6rem; align-items: baseline; }
+  .steps li:last-child { border-bottom: none; }
+  .step-num { font-size: 10px; color: #aaa; min-width: 16px; font-weight: 500; }
+  .footnote-small { font-size: 12px; color: #aaa; font-family: -apple-system, sans-serif; margin-top: 0.75rem; }
+
+  .pipeline { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0; }
+  .pipe-step { background: #fff; border: 1px solid #e0ddd6; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 12px; font-family: -apple-system, sans-serif; color: #555; }
+  .pipe-arrow { color: #bbb; font-size: 14px; }
+
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+  .tool-item { background: #fff; border: 1px solid #e0ddd6; border-radius: 8px; padding: 0.75rem 1rem; }
+  .tool-name { font-size: 13px; font-weight: 500; font-family: -apple-system, sans-serif; color: #1a1a1a; }
+  .tool-use { font-size: 12px; font-family: -apple-system, sans-serif; color: #888; margin-top: 2px; }
+
+  .code-block { background: #fff; border: 1px solid #e0ddd6; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'Courier New', monospace; font-size: 13px; color: #555; line-height: 2; margin-top: 1rem; }
+
+  footer { text-align: center; padding: 2rem; font-size: 12px; font-family: -apple-system, sans-serif; color: #aaa; }
+
+  @media (max-width: 600px) {
+    .protocol-grid { grid-template-columns: 1fr; }
+    .meta { gap: 1.25rem; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Research methodology</div>
+  <h1>Caudate nucleus shape asymmetry in adolescent ADHD</h1>
+  <p class="subtitle">A morphometric analysis using the Linearized Compressed Polar Coordinate (LCPC) Transform to quantify left–right shape differences in the caudate nucleus of adolescents with and without ADHD.</p>
+  <div class="meta">
+    <div class="meta-item"><strong>Dataset</strong>OpenNeuro ds002424</div>
+    <div class="meta-item"><strong>Transform</strong>Parallel Grid LCPC</div>
+    <div class="meta-item"><strong>Analyses</strong>Pure shape &amp; at scale</div>
+    <div class="meta-item"><strong>Export zoom</strong>1.5×</div>
+    <div class="meta-item"><strong>Advisor</strong>David H. Nguyen, PhD</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Background</div>
+  <h2>Research question</h2>
+  <p>Attention-Deficit Hyperactivity Disorder (ADHD) is one of the most common neurodevelopmental conditions in adolescents. While structural MRI scans allow us to examine the brain, much of this data has yet to be intensively studied and analyzed. This project uses the LCPC Transform to conduct a detailed shape analysis of the caudate nucleus — a deep brain structure implicated in ADHD — to find subtle morphometric differences that traditional volumetric measurements would miss.</p>
+  <div class="hypothesis">We expect to find a larger difference in symmetry between the left and right caudate nucleus of an adolescent diagnosed with ADHD compared to a neurotypical adolescent.</div>
+  <p>This hypothesis is grounded in Schrimsher et al. (2002), which found caudate nucleus volume asymmetry predicts ADHD symptomatology in children.</p>
+</div>
+
+<div class="section">
+  <div class="section-label">Slice selection</div>
+  <h2>Identifying the axial slice of interest</h2>
+  <p>Each MRI was aligned according to GRIC coordinates. In the sagittal view, the horizontal slice bisecting the anterior apex of the corpus callosum was identified. The axial view at this position is the slice of interest.</p>
+  <p>The caudate nucleus — adjacent to the lateral ventricle — was segmented. The putamen, which is adjacent to and sometimes touching the caudate in the axial view, was carefully excluded from all tracings.</p>
+</div>
+
+<div class="section">
+  <div class="section-label">Preprocessing protocols</div>
+  <h2>Two analysis tracks</h2>
+  <p>Each subject's caudate masks were preprocessed following two separate protocols. Pure shape removes size differences to compare shape only. At scale preserves native size and is valid because all images were exported at the same magnification (1.5×).</p>
+
+  <div class="protocol-grid">
+    <div class="protocol-card">
+      <h3>Pure shape analysis</h3>
+      <span class="tag tag-pure">Size-independent</span>
+
+      <div class="side-label">Left side</div>
+      <ul class="steps">
+        <li><span class="step-num">1</span>Segment &amp; extract blue mask from original image</li>
+        <li><span class="step-num">2</span>Isolate left caudate to its own white canvas</li>
+        <li><span class="step-num">3</span>Rotate by longest internal line (horizontal rotation tool)</li>
+        <li><span class="step-num">4</span>Trim margins to 1 pixel</li>
+        <li><span class="step-num">5</span>Resize width to 400 px, constrain aspect ratio</li>
+        <li><span class="step-num">6</span>Add 100 px padding to all margins</li>
+        <li><span class="step-num">7</span>Rotate 90° clockwise</li>
+        <li><span class="step-num">8</span>Run parallel grid LCPC transform</li>
+      </ul>
+
+      <div class="side-label">Right side</div>
+      <ul class="steps">
+        <li><span class="step-num">1</span>Isolate right caudate to its own white canvas</li>
+        <li><span class="step-num">2</span>Flip horizontally (so midline is to the left)</li>
+        <li><span class="step-num">3–8</span>Same as left side steps 3–8</li>
+      </ul>
+    </div>
+
+    <div class="protocol-card">
+      <h3>At scale analysis</h3>
+      <span class="tag tag-scale">Size-preserved</span>
+
+      <div class="side-label">Left side</div>
+      <ul class="steps">
+        <li><span class="step-num">1</span>Segment &amp; extract blue mask from original image</li>
+        <li><span class="step-num">2</span>Isolate left caudate to its own white canvas</li>
+        <li><span class="step-num">3</span>Run parallel grid LCPC transform directly</li>
+      </ul>
+
+      <div class="side-label">Right side</div>
+      <ul class="steps">
+        <li><span class="step-num">1</span>Isolate right caudate to its own white canvas</li>
+        <li><span class="step-num">2</span>Flip horizontally (so midline is to the left)</li>
+        <li><span class="step-num">3</span>Run parallel grid LCPC transform</li>
+      </ul>
+      <p class="footnote-small">Valid because all images were exported at 1.5× zoom consistently across subjects.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Analysis pipeline</div>
+  <h2>LCPC transform — 5 parts</h2>
+  <p>Each preprocessed mask passes through the 5-part parallel grid LCPC pipeline developed by David H. Nguyen, PhD (TSG Lab).</p>
+  <div class="pipeline">
+    <span class="pipe-step">Mask image</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step">Part 1: Stencil</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step">Part 2: Intersections</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step">Part 3: Summed distances</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step">Part 4: FFT</span>
+    <span class="pipe-arrow">→</span>
+    <span class="pipe-step">Part 5: Compiled CSV</span>
+  </div>
+  <p>The final output is one compiled CSV per subject containing FFT magnitude values for both the left and right caudate. These values are used as input for the matched-pairs statistical test comparing ADHD and neurotypical groups.</p>
+</div>
+
+<div class="section">
+  <div class="section-label">Data organization</div>
+  <h2>Folder structure</h2>
+  <p>Each subject folder follows this structure to keep pure shape, at scale, left, and right analyses clearly separated.</p>
+  <div class="code-block">
+    sub-N/<br>
+    &nbsp;&nbsp;pure_shape/<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;left/<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;right/<br>
+    &nbsp;&nbsp;at_scale/<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;left/<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;right/<br>
+    &nbsp;&nbsp;intermediate/
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Tools &amp; resources</div>
+  <div class="tools-grid">
+    <div class="tool-item"><div class="tool-name">ITK-SNAP / Fiji</div><div class="tool-use">MRI viewing &amp; segmentation</div></div>
+    <div class="tool-item"><div class="tool-name">Python + OpenCV</div><div class="tool-use">Preprocessing automation</div></div>
+    <div class="tool-item"><div class="tool-name">Parallel Grid LCPC</div><div class="tool-use">Shape transform (TSG Lab)</div></div>
+    <div class="tool-item"><div class="tool-name">NumPy FFT</div><div class="tool-use">Frequency decomposition</div></div>
+    <div class="tool-item"><div class="tool-name">OpenNeuro ds002424</div><div class="tool-use">Source MRI dataset (Hammer et al.)</div></div>
+    <div class="tool-item"><div class="tool-name">Jupyter / VS Code</div><div class="tool-use">Script execution</div></div>
+  </div>
+</div>
+
+<footer>
+  Sage Hukramer · TSG Lab · Advisor: David H. Nguyen, PhD · <a href="https://openneuro.org/datasets/ds002424/versions/1.2.0">Dataset</a> · <a href="https://www.tsg-lab.org/lcpc">LCPC Transform</a>
+</footer>
+
+</body>
+</html>
