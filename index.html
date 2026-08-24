@@ -8,7 +8,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Georgia, serif; color: #1a1a1a; line-height: 1.7; background: #fafaf8; }
   a { color: #185FA5; }
-
   .hero { padding: 3.5rem 2rem 2.5rem; border-bottom: 1px solid #e0ddd6; max-width: 860px; margin: 0 auto; }
   .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #888; font-family: -apple-system, sans-serif; margin-bottom: 0.75rem; }
   h1 { font-size: 30px; font-weight: 400; line-height: 1.25; max-width: 600px; margin-bottom: 1rem; }
@@ -16,14 +15,12 @@
   .meta { display: flex; gap: 2.5rem; margin-top: 1.75rem; flex-wrap: wrap; }
   .meta-item { font-size: 12px; font-family: -apple-system, sans-serif; color: #888; }
   .meta-item strong { display: block; font-size: 13px; color: #1a1a1a; font-weight: 500; margin-bottom: 2px; }
-
   .section { padding: 2.5rem 2rem; border-bottom: 1px solid #e0ddd6; max-width: 860px; margin: 0 auto; }
   .section-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #888; font-family: -apple-system, sans-serif; margin-bottom: 1.25rem; }
   h2 { font-size: 22px; font-weight: 400; margin-bottom: 1rem; }
+  h3 { font-size: 17px; font-weight: 400; margin-bottom: 0.75rem; }
   p { font-size: 15px; color: #555; font-family: -apple-system, sans-serif; margin-bottom: 0.75rem; line-height: 1.65; }
-
   .hypothesis { background: #f5f4f0; border-left: 3px solid #ccc; padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; font-style: italic; font-size: 15px; color: #444; font-family: Georgia, serif; margin: 1rem 0; }
-
   .protocol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem; }
   .protocol-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 1.25rem; }
   .protocol-card h3 { font-size: 14px; font-weight: 500; font-family: -apple-system, sans-serif; margin-bottom: 0.35rem; color: #1a1a1a; }
@@ -36,20 +33,23 @@
   .steps li:last-child { border-bottom: none; }
   .step-num { font-size: 10px; color: #aaa; min-width: 16px; font-weight: 500; }
   .footnote-small { font-size: 12px; color: #aaa; font-family: -apple-system, sans-serif; margin-top: 0.75rem; }
-
   .pipeline { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0; }
   .pipe-step { background: #fff; border: 1px solid #e0ddd6; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 12px; font-family: -apple-system, sans-serif; color: #555; }
   .pipe-arrow { color: #bbb; font-size: 14px; }
-
   .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
   .tool-item { background: #fff; border: 1px solid #e0ddd6; border-radius: 8px; padding: 0.75rem 1rem; }
   .tool-name { font-size: 13px; font-weight: 500; font-family: -apple-system, sans-serif; color: #1a1a1a; }
   .tool-use { font-size: 12px; font-family: -apple-system, sans-serif; color: #888; margin-top: 2px; }
-
   .code-block { background: #fff; border: 1px solid #e0ddd6; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'Courier New', monospace; font-size: 13px; color: #555; line-height: 2; margin-top: 1rem; }
-
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin: 1.25rem 0; }
+  .feature-item { background: #fff; border: 1px solid #e0ddd6; border-radius: 8px; padding: 0.75rem 1rem; }
+  .feature-name { font-size: 13px; font-weight: 500; font-family: -apple-system, sans-serif; color: #1a1a1a; margin-bottom: 3px; }
+  .feature-desc { font-size: 12px; font-family: -apple-system, sans-serif; color: #888; line-height: 1.5; }
+  .code-toggle-btn { background: #fff; border: 1px solid #e0ddd6; border-radius: 6px; padding: 0.5rem 1rem; font-size: 13px; font-family: -apple-system, sans-serif; color: #185FA5; cursor: pointer; margin-top: 1rem; }
+  .code-toggle-btn:hover { background: #e6f1fb; }
+  .code-area { display: none; margin-top: 1rem; background: #1a1a1a; border-radius: 8px; padding: 1.25rem; overflow-x: auto; }
+  .code-area pre { font-family: 'Courier New', monospace; font-size: 12px; color: #e0e0e0; line-height: 1.6; white-space: pre; }
   footer { text-align: center; padding: 2rem; font-size: 12px; font-family: -apple-system, sans-serif; color: #aaa; }
-
   @media (max-width: 600px) {
     .protocol-grid { grid-template-columns: 1fr; }
     .meta { gap: 1.25rem; }
@@ -88,15 +88,77 @@
 </div>
 
 <div class="section">
+  <div class="section-label">Segmentation tool</div>
+  <h2>Brain Structure Boundary Drawer</h2>
+  <p>A custom Python desktop application was built to trace the caudate nucleus boundary on each MRI axial slice. The tool uses an intelligent scissors algorithm — rather than requiring a perfectly hand-drawn outline, the user clicks waypoints near the boundary and the app automatically snaps each path segment to the nearest edge using A* pathfinding on an edge detection cost map.</p>
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="feature-name">Intelligent scissors</div>
+      <div class="feature-desc">A* pathfinding snaps each segment to the nearest color boundary automatically</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-name">Edge cost map</div>
+      <div class="feature-desc">Combines Sobel gradient and Canny edge detection to guide pathfinding</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-name">Waypoint system</div>
+      <div class="feature-desc">Click to place points, undo last point, close shape when done</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-name">Zoom &amp; scroll</div>
+      <div class="feature-desc">Zoom up to 8× with scroll wheel for precise boundary tracing</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-name">Multiple shapes</div>
+      <div class="feature-desc">Trace left and right caudate on the same image in one session</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-name">Export</div>
+      <div class="feature-desc">Saves traced outline as PNG for downstream preprocessing</div>
+    </div>
+  </div>
+  <button class="code-toggle-btn" onclick="toggleCode()">View source code</button>
+  <div class="code-area" id="codeArea">
+    <pre>"""
+Brain Structure Boundary Drawer - Intelligent Scissors mode
+Click waypoints around a structure; path snaps to nearest edge.
+"""
+
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import cv2
+import numpy as np
+import heapq
+from PIL import Image, ImageTk
+
+PATH_CLR_CV = (220, 30, 30)
+DOT_RADIUS  = 3
+DISPLAY_MAX = 900
+
+def build_cost_map(gray):
+    sx  = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+    sy  = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+    mag = np.sqrt(sx**2 + sy**2)
+    mag = cv2.GaussianBlur(mag, (3, 3), 0)
+    mag = mag / (mag.max() + 1e-6)
+    canny = cv2.Canny(gray, 30, 90).astype(np.float32) / 255.0
+    canny = cv2.GaussianBlur(canny, (5, 5), 1.5)
+    canny = canny / (canny.max() + 1e-6)
+    combined = np.clip(mag * 0.5 + canny * 0.5, 0, 1)
+    return np.clip((1.0 - combined).astype(np.float32), 0.01, 1.0)
+
+# Full source available on GitHub</pre>
+  </div>
+</div>
+
+<div class="section">
   <div class="section-label">Preprocessing protocols</div>
   <h2>Two analysis tracks</h2>
   <p>Each subject's caudate masks were preprocessed following two separate protocols. Pure shape removes size differences to compare shape only. At scale preserves native size and is valid because all images were exported at the same magnification (1.5×).</p>
-
   <div class="protocol-grid">
     <div class="protocol-card">
       <h3>Pure shape analysis</h3>
       <span class="tag tag-pure">Size-independent</span>
-
       <div class="side-label">Left side</div>
       <ul class="steps">
         <li><span class="step-num">1</span>Segment &amp; extract blue mask from original image</li>
@@ -108,7 +170,6 @@
         <li><span class="step-num">7</span>Rotate 90° clockwise</li>
         <li><span class="step-num">8</span>Run parallel grid LCPC transform</li>
       </ul>
-
       <div class="side-label">Right side</div>
       <ul class="steps">
         <li><span class="step-num">1</span>Isolate right caudate to its own white canvas</li>
@@ -116,18 +177,15 @@
         <li><span class="step-num">3–8</span>Same as left side steps 3–8</li>
       </ul>
     </div>
-
     <div class="protocol-card">
       <h3>At scale analysis</h3>
       <span class="tag tag-scale">Size-preserved</span>
-
       <div class="side-label">Left side</div>
       <ul class="steps">
         <li><span class="step-num">1</span>Segment &amp; extract blue mask from original image</li>
         <li><span class="step-num">2</span>Isolate left caudate to its own white canvas</li>
         <li><span class="step-num">3</span>Run parallel grid LCPC transform directly</li>
       </ul>
-
       <div class="side-label">Right side</div>
       <ul class="steps">
         <li><span class="step-num">1</span>Isolate right caudate to its own white canvas</li>
@@ -188,8 +246,24 @@
 </div>
 
 <footer>
-  Sage Hukramer · TSG Lab · Advisor: David H. Nguyen, PhD · <a href="https://openneuro.org/datasets/ds002424/versions/1.2.0">Dataset</a> · <a href="https://www.tsg-lab.org/lcpc">LCPC Transform</a>
+  Sage Hukramer · TSG Lab · Advisor: David H. Nguyen, PhD ·
+  <a href="https://openneuro.org/datasets/ds002424/versions/1.2.0">Dataset</a> ·
+  <a href="https://www.tsg-lab.org/lcpc">LCPC Transform</a>
 </footer>
+
+<script>
+function toggleCode() {
+  var area = document.getElementById('codeArea');
+  var btn = document.querySelector('.code-toggle-btn');
+  if (area.style.display === 'block') {
+    area.style.display = 'none';
+    btn.textContent = 'View source code';
+  } else {
+    area.style.display = 'block';
+    btn.textContent = 'Hide source code';
+  }
+}
+</script>
 
 </body>
 </html>
