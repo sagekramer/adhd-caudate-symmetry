@@ -1,0 +1,332 @@
+"""
+Brain Structure Boundary Drawer  –  Intelligent Scissors mode
+--------------------------------------------------------------
+- Open an image
+- Click to place waypoints around a structure
+- Between each pair of waypoints the path snaps to the nearest color boundary
+- Click any existing dot to close/connect the shape at that point
+- Use Hide Dots to see the clean filled boundary (and for export)
+- Reset to start over, Save to export
+"""
+
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import cv2
+import numpy as np
+import heapq
+from PIL import Image, ImageTk
+
+
+# ── constants ──────────────────────────────────────────────────────────────────
+PATH_CLR_CV   = (220,  30,  30)
+FILL_CLR_CV   = (220,  30,  30)
+DOT_RADIUS    = 3
+CLOSE_RADIUS  = 12
+DISPLAY_MAX   = 900
+
+
+# ── image helpers ──────────────────────────────────────────────────────────────
+
+def resize_for_display(img_rgb: np.ndarray, zoom: float = 1.0):
+    h, w = img_rgb.shape[:2]
+    scale = min(DISPLAY_MAX / w, DISPLAY_MAX / h, 1.0) * zoom
+    new_w = max(1, int(w * scale))
+    new_h = max(1, int(h * scale))
+    interp = cv2.INTER_AREA if scale < 1.0 else cv2.INTER_LINEAR
+    img_rgb = cv2.resize(img_rgb, (new_w, new_h), interpolation=interp)
+    return img_rgb, scale
+
+
+def build_cost_map(gray: np.ndarray) -> np.ndarray:
+    sx  = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+    sy  = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+    mag = np.sqrt(sx**2 + sy**2)
+    mag = cv2.GaussianBlur(mag, (3, 3), 0)
+    mag = mag / (mag.max() + 1e-6)
+    canny = cv2.Canny(gray, 30, 90).astype(np.float32) / 255.0
+    canny = cv2.GaussianBlur(canny, (5, 5), 1.5)
+    canny = canny / (canny.max() + 1e-6)
+    combined = np.clip(mag * 0.5 + canny * 0.5, 0, 1)
+    cost = (1.0 - combined).astype(np.float32)
+    return np.clip(cost, 0.01, 1.0)
+
+
+# ── path-finding (A* on cost map) ─────────────────────────────────────────────
+
+_DIRS = [(-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0),
+         (-1,-1, 1.414), (-1, 1, 1.414), (1,-1, 1.414), (1, 1, 1.414)]
+
+
+def find_path(cost_map, p1, p2):
+    h, w = cost_map.shape
+    x1, y1 = int(p1[0]), int(p1[1])
+    x2, y2 = int(p2[0]), int(p2[1])
+
+    if (x1, y1) == (x2, y2):
+        return [(x1, y1)]
+
+    seg_len = np.sqrt((x2-x1)**2 + (y2-y1)**2)
+    max_dev = max(seg_len / 2.5, 4.0)
+    dx_seg = x2 - x1
+    dy_seg = y2 - y1
+    line_denom = seg_len
+
+    def within_corridor(ny, nx):
+        perp = abs(dy_seg * (nx - x1) - dx_seg * (ny - y1)) / line_denom
+        if perp > max_dev:
+            return False
+        t = (dx_seg * (nx - x1) + dy_seg * (ny - y1)) / (seg_len * seg_len)
+        return -0.05 <= t <= 1.05
+
+    dist_arr = np.full((h, w), np.inf, dtype=np.float32)
+    dist_arr[y1, x1] = 0.0
+    prev = {}
+
+    def h_est(y, x):
+        return 0.01 * np.sqrt((x - x2)**2 + (y - y2)**2)
+
+    heap = [(h_est(y1, x1), 0.0, y1, x1)]
+
+    while heap:
+        f, d, cy, cx = heapq.heappop(heap)
+        if d > dist_arr[cy, cx] + 1e-6:
+            continue
+        if cx == x2 and cy == y2:
+            break
+        for dy, dx, step in _DIRS:
+            ny, nx = cy + dy, cx + dx
+            if 0 <= nx < w and 0 <= ny < h and within_corridor(ny, nx):
+                nd = d + step * float(cost_map[ny, nx])
+                if nd < dist_arr[ny, nx]:
+                    dist_arr[ny, nx] = nd
+                    prev[(ny, nx)] = (cy, cx)
+                    heapq.heappush(heap, (nd + h_est(ny, nx), nd, ny, nx))
+
+    if (y2, x2) not in prev and not (x1==x2 and y1==y2):
+        return _bresenham(x1, y1, x2, y2)
+
+    path = []
+    cur  = (y2, x2)
+    while cur in prev:
+        path.append((cur[1], cur[0]))
+        cur = prev[cur]
+    path.append((x1, y1))
+    path.reverse()
+    return path
+
+
+def _bresenham(x1, y1, x2, y2):
+    pts, dx, dy = [], abs(x2-x1), abs(y2-y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    err = dx - dy
+    while True:
+        pts.append((x1, y1))
+        if x1 == x2 and y1 == y2:
+            break
+        e2 = 2 * err
+        if e2 > -dy: err -= dy; x1 += sx
+        if e2 <  dx: err += dx; y1 += sy
+    return pts
+
+
+# ── app ────────────────────────────────────────────────────────────────────────
+
+class BrainApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Brain Structure Boundary Drawer")
+        self.resizable(True, True)
+
+        self.original_gray = None
+        self.original_rgb  = None
+        self.cost_map      = None
+        self.display_scale = 1.0
+
+        self.completed_shapes = []
+        self.waypoints = []
+        self.paths     = []
+        self.closed    = False
+        self.show_dots = True
+        self.zoom      = 1.0
+        self._tk_image = None
+
+        self._build_ui()
+
+    def _build_ui(self):
+        tb = tk.Frame(self, bd=1, relief=tk.RAISED)
+        tb.pack(side=tk.TOP, fill=tk.X)
+
+        tk.Button(tb, text="Open Image", command=self._open_image).pack(side=tk.LEFT, padx=4, pady=3)
+        tk.Button(tb, text="Reset",      command=self._reset     ).pack(side=tk.LEFT, padx=4, pady=3)
+        tk.Button(tb, text="Save Image", command=self._save_image).pack(side=tk.LEFT, padx=4, pady=3)
+
+        self.dots_btn_var = tk.StringVar(value="Hide Dots")
+        tk.Button(tb, textvariable=self.dots_btn_var,
+                  command=self._toggle_dots).pack(side=tk.LEFT, padx=4, pady=3)
+        tk.Button(tb, text="Close Shape",
+                  command=self._close_shape_btn).pack(side=tk.LEFT, padx=4, pady=3)
+        tk.Button(tb, text="Undo", command=self._undo).pack(side=tk.LEFT, padx=4, pady=3)
+        tk.Button(tb, text="＋", width=2, command=lambda: self._zoom_by(1.2)).pack(side=tk.LEFT, padx=2, pady=3)
+        tk.Button(tb, text="－", width=2, command=lambda: self._zoom_by(0.8)).pack(side=tk.LEFT, padx=2, pady=3)
+        tk.Button(tb, text="1:1", command=self._zoom_reset).pack(side=tk.LEFT, padx=2, pady=3)
+
+        self.status_var = tk.StringVar(value="Open an image to begin.")
+        tk.Label(self, textvariable=self.status_var, anchor=tk.W,
+                 relief=tk.SUNKEN).pack(side=tk.BOTTOM, fill=tk.X)
+
+        frame = tk.Frame(self)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        self.canvas = tk.Canvas(frame, bg="#222", cursor="tcross")
+        vsb = tk.Scrollbar(frame, orient=tk.VERTICAL,   command=self.canvas.yview)
+        hsb = tk.Scrollbar(frame, orient=tk.HORIZONTAL, command=self.canvas.xview)
+        self.canvas.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        vsb.pack(side=tk.RIGHT,  fill=tk.Y)
+        hsb.pack(side=tk.BOTTOM, fill=tk.X)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        self.canvas.bind("<Button-1>",   self._on_click)
+        self.canvas.bind("<MouseWheel>", self._on_scroll)
+        self.bind("<Command-equal>", lambda e: self._zoom_by(1.2))
+        self.bind("<Command-minus>",  lambda e: self._zoom_by(0.8))
+        self.bind("<Command-0>",      lambda e: self._zoom_reset())
+        self.bind("<Command-z>",      lambda e: self._undo())
+
+    def _open_image(self):
+        path = filedialog.askopenfilename(
+            title="Select brain scan",
+            filetypes=[("Images", "*.png *.jpg *.jpeg *.tif *.tiff *.bmp"),
+                       ("All files", "*.*")])
+        if not path:
+            return
+        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            messagebox.showerror("Error", f"Could not load:\n{path}")
+            return
+        self.original_gray = img
+        self.original_rgb  = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        self.cost_map      = build_cost_map(img)
+        self._reset()
+        self._resize_window_to_image()
+        self.status_var.set("Click to place waypoints. Click Close Shape when done.")
+
+    def _on_scroll(self, event):
+        cx = self.canvas.canvasx(event.x)
+        cy = self.canvas.canvasy(event.y)
+        old_scale = self.display_scale
+        factor = 1.1 if event.delta > 0 else 0.9
+        self._zoom_by(factor)
+        new_scale = self.display_scale
+        new_cx = (cx / old_scale) * new_scale
+        new_cy = (cy / old_scale) * new_scale
+        sr = self.canvas.cget("scrollregion").split()
+        if len(sr) == 4:
+            tw, th = float(sr[2]), float(sr[3])
+            if tw > 0: self.canvas.xview_moveto((new_cx - event.x) / tw)
+            if th > 0: self.canvas.yview_moveto((new_cy - event.y) / th)
+
+    def _zoom_by(self, factor):
+        self.zoom = max(0.3, min(self.zoom * factor, 8.0))
+        self._redraw()
+
+    def _zoom_reset(self):
+        self.zoom = 1.0
+        self._redraw()
+
+    def _toggle_dots(self):
+        self.show_dots = not self.show_dots
+        self.dots_btn_var.set("Show Dots" if not self.show_dots else "Hide Dots")
+        self._redraw()
+
+    def _on_click(self, event):
+        if self.original_gray is None:
+            self.status_var.set("Open an image first.")
+            return
+        if self.closed:
+            return
+        cx = self.canvas.canvasx(event.x)
+        cy = self.canvas.canvasy(event.y)
+        ox = int(cx / self.display_scale)
+        oy = int(cy / self.display_scale)
+        ih, iw = self.original_gray.shape
+        ox = max(0, min(ox, iw - 1))
+        oy = max(0, min(oy, ih - 1))
+        if self.waypoints:
+            prev = self.waypoints[-1]
+            self.status_var.set("Computing boundary path...")
+            self.update_idletasks()
+            path = find_path(self.cost_map, prev, (ox, oy))
+            self.paths.append(path)
+        self.waypoints.append((ox, oy))
+        self._redraw()
+        n = len(self.waypoints)
+        self.status_var.set(f"{n} waypoint(s) placed. " +
+            ("Press Close Shape to finish." if n >= 2 else "Click another point to start drawing."))
+
+    def _undo(self):
+        if not self.waypoints:
+            return
+        self.waypoints.pop()
+        if self.paths:
+            self.paths.pop()
+        self._redraw()
+
+    def _close_shape_btn(self):
+        if len(self.waypoints) < 2:
+            self.status_var.set("Need at least 2 waypoints to close a shape.")
+            return
+        self._close_shape_to(0)
+
+    def _close_shape_to(self, target_idx):
+        self.status_var.set("Computing closing path...")
+        self.update_idletasks()
+        closing = find_path(self.cost_map, self.waypoints[-1], self.waypoints[target_idx])
+        self.paths.append(closing)
+        self.completed_shapes.append(list(self.paths))
+        self.waypoints = []
+        self.paths     = []
+        self.closed    = False
+        self._redraw()
+        n = len(self.completed_shapes)
+        self.status_var.set(f"{n} shape(s) done. Click anywhere to start another, or Save.")
+
+    def _redraw(self):
+        if self.original_rgb is None:
+            return
+        img = self.original_rgb.copy()
+        for shape_paths in self.completed_shapes:
+            all_pts = []
+            for path in shape_paths:
+                all_pts.extend(path)
+            if all_pts:
+                pts_arr = np.array(all_pts, dtype=np.int32)
+                if not self.show_dots:
+                    overlay = img.copy()
+                    cv2.fillPoly(overlay, [pts_arr.reshape(-1, 1, 2)], color=FILL_CLR_CV)
+                    cv2.addWeighted(overlay, 0.25, img, 0.75, 0, img)
+                for path in shape_paths:
+                    pts = np.array(path, dtype=np.int32).reshape(-1, 1, 2)
+                    cv2.polylines(img, [pts], isClosed=False, color=PATH_CLR_CV, thickness=1)
+        for path in self.paths:
+            pts = np.array(path, dtype=np.int32).reshape(-1, 1, 2)
+            cv2.polylines(img, [pts], isClosed=False, color=PATH_CLR_CV, thickness=1)
+        self._show_image(img)
+        self._draw_overlays()
+
+    def _draw_overlays(self):
+        self.canvas.delete("overlay")
+        if not self.waypoints or not self.show_dots:
+            return
+        s = self.display_scale
+        r = DOT_RADIUS
+        for ox, oy in self.waypoints:
+            dx, dy = ox * s, oy * s
+            self.canvas.create_oval(dx-r, dy-r, dx+r, dy+r,
+                                    outline="#00ff00", fill="#00ff00", tags="overlay")
+
+    def _show_image(self, rgb):
+        disp, self.display_scale = resize_for_display(rgb, self.zoom)
+        pil_img = Image.fromarray(disp)
+        self._tk_image = ImageTk.PhotoImage(pil_img)
+        h, w = disp.shape[:2]
